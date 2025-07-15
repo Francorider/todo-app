@@ -1,7 +1,10 @@
+// src/components/ListCard.tsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import TaskItem, { Task } from './TaskItem';
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL as string;
 
 export type TodoList = {
   id: string;
@@ -42,7 +45,7 @@ export default function ListCard({
 
   // counts for header display
   const totalCount = list.tasks.length;
-  const completedCount = list.tasks.filter(t => t.completed).length;
+  const completedCount = list.tasks.filter((t) => t.completed).length;
 
   useEffect(() => {
     if (expand !== undefined) {
@@ -62,7 +65,7 @@ export default function ListCard({
       const token = await getToken();
       if (!token) throw new Error('Missing auth token');
       const res = await fetch(
-        `http://localhost:4000/api/lists/${list.id}`,
+        `${API_BASE}/api/lists/${list.id}`,
         {
           method: 'PUT',
           headers: {
@@ -91,7 +94,7 @@ export default function ListCard({
       const token = await getToken();
       if (!token) throw new Error('Missing auth token');
       const res = await fetch(
-        `http://localhost:4000/api/lists/${list.id}`,
+        `${API_BASE}/api/lists/${list.id}`,
         {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
@@ -115,7 +118,7 @@ export default function ListCard({
       const token = await getToken();
       if (!token) throw new Error('Missing auth token');
       const res = await fetch(
-        `http://localhost:4000/api/lists/${list.id}/tasks`,
+        `${API_BASE}/api/lists/${list.id}/tasks`,
         {
           method: 'POST',
           headers: {
@@ -142,16 +145,16 @@ export default function ListCard({
       {/* header */}
       <div
         className="flex items-center justify-between p-4 bg-black text-white cursor-pointer"
-        onClick={() => setExpanded(x => !x)}
+        onClick={() => setExpanded((x) => !x)}
       >
         <div className="flex-1 flex items-center space-x-2">
           {editing ? (
             <input
               className="flex-1 bg-black text-white border-b border-white focus:outline-none"
               value={draftTitle}
-              onChange={e => setDraftTitle(e.target.value)}
+              onChange={(e) => setDraftTitle(e.target.value)}
               onBlur={saveTitle}
-              onKeyDown={e => e.key === 'Enter' && saveTitle()}
+              onKeyDown={(e) => e.key === 'Enter' && saveTitle()}
               autoFocus
             />
           ) : (
@@ -167,7 +170,10 @@ export default function ListCard({
         <div className="flex space-x-2">
           {!editing && (
             <button
-              onClick={e => { e.stopPropagation(); setEditing(true); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditing(true);
+              }}
               className="group p-1 transform hover:scale-110 transition"
               title="Rename list"
             >
@@ -175,7 +181,10 @@ export default function ListCard({
             </button>
           )}
           <button
-            onClick={e => { e.stopPropagation(); removeList(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              removeList();
+            }}
             className="group p-1 transform hover:scale-110 transition"
             title="Delete list"
           >
@@ -187,14 +196,14 @@ export default function ListCard({
       {expanded && (
         <div className="px-4 pt-4 pb-4">
           <ul className="mb-3 space-y-2">
-            {list.tasks.map(task => (
+            {list.tasks.map((task) => (
               <TaskItem
                 key={task.id}
                 listId={list.id}
                 task={task}
                 searchTerm={searchTerm}
-                onUpdate={u => onUpdateTask(list.id, u)}
-                onDelete={tid => onDeleteTask(list.id, tid)}
+                onUpdate={(u) => onUpdateTask(list.id, u)}
+                onDelete={(tid) => onDeleteTask(list.id, tid)}
                 onError={onError}
               />
             ))}
@@ -208,7 +217,7 @@ export default function ListCard({
               className="flex-1 border rounded p-1"
               placeholder="Add a task…"
               value={newContent}
-              onChange={e => setNewContent(e.target.value)}
+              onChange={(e) => setNewContent(e.target.value)}
               disabled={creatingTask}
             />
             <button

@@ -1,9 +1,12 @@
+// src/App.tsx
 import React, { useEffect, useState } from 'react';
 import { SignIn, useUser, useAuth } from '@clerk/clerk-react';
 import toast, { Toaster } from 'react-hot-toast';
 import Select, { StylesConfig, SingleValue } from 'react-select';
 import ListCard, { TodoList } from './components/ListCard';
 import './index.css';
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL as string;
 
 type SortOption = { value: 'az' | 'za'; label: string };
 
@@ -74,11 +77,11 @@ export default function App() {
     (async () => {
       try {
         const token = await getToken();
-        await fetch('http://localhost:4000/api/sync-user', {
+        await fetch(`${API_BASE}/api/sync-user`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         });
-        const res = await fetch('http://localhost:4000/api/lists', {
+        const res = await fetch(`${API_BASE}/api/lists`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error(res.statusText);
@@ -100,7 +103,7 @@ export default function App() {
     try {
       const token = await getToken();
       if (!token) throw new Error('No auth token');
-      const res = await fetch('http://localhost:4000/api/lists', {
+      const res = await fetch(`${API_BASE}/api/lists`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +113,7 @@ export default function App() {
       });
       if (!res.ok) throw new Error(await res.text());
       const created: TodoList = await res.json();
-      setLists(prev => (prev ? [created, ...prev] : [created]));
+      setLists((prev) => (prev ? [created, ...prev] : [created]));
       setNewTitle('');
       toast.success('List created');
     } catch (e: any) {
@@ -123,26 +126,26 @@ export default function App() {
 
   // handlers
   const renameList = (updated: TodoList) =>
-    setLists(prev => prev!.map(l => (l.id === updated.id ? updated : l)));
+    setLists((prev) => prev!.map((l) => (l.id === updated.id ? updated : l)));
   const deleteList = (id: string) => {
-    setLists(prev => prev!.filter(l => l.id !== id));
+    setLists((prev) => prev!.filter((l) => l.id !== id));
     toast.success('List deleted');
   };
   const addTask = (listId: string, task: TodoList['tasks'][0]) => {
-    setLists(prev =>
-      prev!.map(l =>
+    setLists((prev) =>
+      prev!.map((l) =>
         l.id === listId ? { ...l, tasks: [...l.tasks, task] } : l
       )
     );
     toast.success('Task added');
   };
   const updateTask = (listId: string, updated: TodoList['tasks'][0]) => {
-    setLists(prev =>
-      prev!.map(l =>
+    setLists((prev) =>
+      prev!.map((l) =>
         l.id === listId
           ? {
               ...l,
-              tasks: l.tasks.map(t => (t.id === updated.id ? updated : t)),
+              tasks: l.tasks.map((t) => (t.id === updated.id ? updated : t)),
             }
           : l
       )
@@ -150,10 +153,10 @@ export default function App() {
     toast.success('Task updated');
   };
   const deleteTask = (listId: string, taskId: string) => {
-    setLists(prev =>
-      prev!.map(l =>
+    setLists((prev) =>
+      prev!.map((l) =>
         l.id === listId
-          ? { ...l, tasks: l.tasks.filter(t => t.id !== taskId) }
+          ? { ...l, tasks: l.tasks.filter((t) => t.id !== taskId) }
           : l
       )
     );
@@ -184,26 +187,26 @@ export default function App() {
   if (globalSearch.trim()) {
     const q = globalSearch.toLowerCase();
     processed = processed
-      .map(l => ({
+      .map((l) => ({
         ...l,
-        tasks: l.tasks.filter(t =>
+        tasks: l.tasks.filter((t) =>
           t.content.toLowerCase().includes(q)
         ),
       }))
-      .filter(l => l.tasks.length);
+      .filter((l) => l.tasks.length);
   }
   if (showIncomplete) {
     processed = processed
-      .map(l => ({
+      .map((l) => ({
         ...l,
-        tasks: l.tasks.filter(t => !t.completed),
+        tasks: l.tasks.filter((t) => !t.completed),
       }))
-      .filter(l => l.tasks.length);
+      .filter((l) => l.tasks.length);
   }
   processed = [...processed].sort((a, b) =>
     sortListsAZ ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
   );
-  processed = processed.map(l => ({
+  processed = processed.map((l) => ({
     ...l,
     tasks: [...l.tasks].sort((a, b) =>
       sortTasksAZ ? a.content.localeCompare(b.content) : b.content.localeCompare(a.content)
@@ -211,7 +214,7 @@ export default function App() {
   }));
 
   const autoExpand = showIncomplete || Boolean(globalSearch.trim());
-  const hasAnyTasks = lists.some(l => l.tasks.length > 0);
+  const hasAnyTasks = lists.some((l) => l.tasks.length > 0);
 
   return (
     <>
@@ -229,7 +232,7 @@ export default function App() {
               className="w-full border rounded p-2"
               placeholder="Search all tasks…"
               value={globalSearch}
-              onChange={e => setGlobalSearch(e.target.value)}
+              onChange={(e) => setGlobalSearch(e.target.value)}
             />
           )}
 
@@ -238,7 +241,7 @@ export default function App() {
               <input
                 type="checkbox"
                 checked={showIncomplete}
-                onChange={e => setShowIncomplete(e.target.checked)}
+                onChange={(e) => setShowIncomplete(e.target.checked)}
                 className="
                   appearance-none h-5 w-5 border-2 border-gray-300 rounded-sm
                   checked:bg-black checked:border-black transition cursor-pointer
@@ -253,7 +256,7 @@ export default function App() {
                 <div className="w-full sm:w-36">
                   <Select
                     styles={selectStyles}
-                    value={listSortOptions.find(o =>
+                    value={listSortOptions.find((o) =>
                       sortListsAZ ? o.value === 'az' : o.value === 'za'
                     )}
                     onChange={(opt: SingleValue<SortOption>) =>
@@ -271,7 +274,7 @@ export default function App() {
                 <div className="w-full sm:w-36">
                   <Select
                     styles={selectStyles}
-                    value={taskSortOptions.find(o =>
+                    value={taskSortOptions.find((o) =>
                       sortTasksAZ ? o.value === 'az' : o.value === 'za'
                     )}
                     onChange={(opt: SingleValue<SortOption>) =>
@@ -293,7 +296,7 @@ export default function App() {
           <p>No lists match the current filters or search. Create one below.</p>
         ) : (
           <ul className="space-y-4 mb-6">
-            {processed.map(list => (
+            {processed.map((list) => (
               <ListCard
                 key={list.id}
                 list={list}
@@ -319,7 +322,7 @@ export default function App() {
             className="flex-1 border rounded p-2"
             placeholder="New list title…"
             value={newTitle}
-            onChange={e => setNewTitle(e.target.value)}
+            onChange={(e) => setNewTitle(e.target.value)}
             disabled={creatingList}
           />
           <button

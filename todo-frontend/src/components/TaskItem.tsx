@@ -1,6 +1,9 @@
+// src/components/TaskItem.tsx
 import React, { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL as string;
 
 export type Task = {
   id: string;
@@ -33,7 +36,7 @@ export default function TaskItem({
       const token = await getToken();
       if (!token) throw new Error('Missing auth token');
       const res = await fetch(
-        `http://localhost:4000/api/tasks/${task.id}`,
+        `${API_BASE}/api/tasks/${task.id}`,
         {
           method: 'PUT',
           headers: {
@@ -64,7 +67,7 @@ export default function TaskItem({
       const token = await getToken();
       if (!token) throw new Error('Missing auth token');
       const res = await fetch(
-        `http://localhost:4000/api/tasks/${task.id}`,
+        `${API_BASE}/api/tasks/${task.id}`,
         {
           method: 'PUT',
           headers: {
@@ -93,7 +96,7 @@ export default function TaskItem({
       const token = await getToken();
       if (!token) throw new Error('Missing auth token');
       const res = await fetch(
-        `http://localhost:4000/api/tasks/${task.id}`,
+        `${API_BASE}/api/tasks/${task.id}`,
         {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
@@ -130,9 +133,9 @@ export default function TaskItem({
           <input
             className="w-full border-b-2 focus:outline-none bg-transparent"
             value={draftContent}
-            onChange={e => setDraftContent(e.target.value)}
+            onChange={(e) => setDraftContent(e.target.value)}
             onBlur={saveEdit}
-            onKeyDown={e => e.key === 'Enter' && saveEdit()}
+            onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
             autoFocus
             aria-label="Edit task content"
           />
@@ -143,7 +146,7 @@ export default function TaskItem({
 
       {!editing && (
         <button
-          onClick={e => {
+          onClick={(e) => {
             e.stopPropagation();
             setEditing(true);
           }}
@@ -156,7 +159,7 @@ export default function TaskItem({
       )}
 
       <button
-        onClick={e => {
+        onClick={(e) => {
           e.stopPropagation();
           remove();
         }}
