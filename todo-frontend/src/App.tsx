@@ -79,9 +79,11 @@ export default function App() {
         const token = await getToken();
         await fetch(`${API_BASE}/api/sync-user`, {
           method: 'POST',
+          credentials: 'include',
           headers: { Authorization: `Bearer ${token}` },
         });
         const res = await fetch(`${API_BASE}/api/lists`, {
+          credentials: 'include',
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error(res.statusText);
@@ -105,6 +107,7 @@ export default function App() {
       if (!token) throw new Error('No auth token');
       const res = await fetch(`${API_BASE}/api/lists`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

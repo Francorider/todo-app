@@ -68,6 +68,7 @@ export default function ListCard({
         `${API_BASE}/api/lists/${list.id}`,
         {
           method: 'PUT',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -97,6 +98,7 @@ export default function ListCard({
         `${API_BASE}/api/lists/${list.id}`,
         {
           method: 'DELETE',
+          credentials: 'include',
           headers: { Authorization: `Bearer ${token}` },
         }
       );
@@ -121,6 +123,7 @@ export default function ListCard({
         `${API_BASE}/api/lists/${list.id}/tasks`,
         {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,

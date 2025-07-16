@@ -1,3 +1,4 @@
+// server.ts
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -7,7 +8,15 @@ import { clerkMiddleware, requireAuth, getAuth } from '@clerk/express';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+
+// cors allow (with preflight)
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 const prisma = new PrismaClient();
@@ -104,7 +113,6 @@ app.put('/api/lists/:listId', async (req, res) => {
 
   res.json(updated);
 });
-
 
 // create task
 app.post('/api/lists/:listId/tasks', async (req, res) => {

@@ -39,6 +39,7 @@ export default function TaskItem({
         `${API_BASE}/api/tasks/${task.id}`,
         {
           method: 'PUT',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -70,6 +71,7 @@ export default function TaskItem({
         `${API_BASE}/api/tasks/${task.id}`,
         {
           method: 'PUT',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -99,6 +101,7 @@ export default function TaskItem({
         `${API_BASE}/api/tasks/${task.id}`,
         {
           method: 'DELETE',
+          credentials: 'include',
           headers: { Authorization: `Bearer ${token}` },
         }
       );
