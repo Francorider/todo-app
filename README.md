@@ -33,7 +33,7 @@ NOTE: I am using Render's free tier which auto-shutsdown after periods of inacti
    
        cd todo-backend
        npm install
-       # Edit env file and set:
+       # Add / Edit env file and set:
        #   CLERK_PUBLISHABLE_KEY=pk_<your-publishable-key>
        #   CLERK_SECRET_KEY=sk_<your-secret-key>
        #   DATABASE_URL="file:./dev.db"
@@ -47,7 +47,7 @@ NOTE: I am using Render's free tier which auto-shutsdown after periods of inacti
    
        cd ../todo-frontend
        npm install
-       # Edit env file and set:
+       # Add / Edit env file and set:
        #   REACT_APP_CLERK_PUBLISHABLE_KEY=pk_<same-publishable-key>
        #   REACT_APP_API_BASE_URL="http://localhost:4000" // default local port for backend
        npm start
