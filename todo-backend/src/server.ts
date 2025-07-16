@@ -7,31 +7,18 @@ import { clerkMiddleware, requireAuth, getAuth } from '@clerk/express';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
-
-// cors allow
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
-  })
-);
-
-app.options('*', cors());
-
-//json parsin
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
-
-// clerk middlewar
-app.use(clerkMiddleware());
 
 const prisma = new PrismaClient();
 
-// sync user
+// clerk
+app.use(clerkMiddleware());
+
+// clerk db sync
 app.post('/api/sync-user', async (req, res) => {
   const auth = getAuth(req);
-  if (!auth.userId) {
-    return res.sendStatus(401);
-  }
+  if (!auth.userId) return res.sendStatus(401);
   const clerkId = auth.userId;
 
   await prisma.user.upsert({
@@ -43,13 +30,14 @@ app.post('/api/sync-user', async (req, res) => {
   res.sendStatus(200);
 });
 
-// route protect
+// route auth
 app.use(requireAuth());
 
-// new list
+// create list
 app.post('/api/lists', async (req, res) => {
   const auth = getAuth(req);
-  const clerkId = auth.userId!;
+  if (!auth.userId) return res.sendStatus(401);
+  const clerkId = auth.userId;
   const { title } = req.body;
 
   const user = await prisma.user.findUniqueOrThrow({ where: { clerkId } });
@@ -61,10 +49,11 @@ app.post('/api/lists', async (req, res) => {
   res.json(list);
 });
 
-// fetch list
+// get lists
 app.get('/api/lists', async (req, res) => {
   const auth = getAuth(req);
-  const clerkId = auth.userId!;
+  if (!auth.userId) return res.sendStatus(401);
+  const clerkId = auth.userId;
 
   const user = await prisma.user.findUniqueOrThrow({ where: { clerkId } });
   const lists = await prisma.todoList.findMany({
@@ -78,21 +67,25 @@ app.get('/api/lists', async (req, res) => {
 // delete list
 app.delete('/api/lists/:listId', async (req, res) => {
   const auth = getAuth(req);
-  const clerkId = auth.userId!;
+  if (!auth.userId) return res.sendStatus(401);
+  const clerkId = auth.userId;
   const { listId } = req.params;
 
   // list auth
   const user = await prisma.user.findUniqueOrThrow({ where: { clerkId } });
+  // delete tasks in list
   await prisma.task.deleteMany({ where: { listId } });
+  // delete list
   await prisma.todoList.delete({ where: { id: listId } });
 
   res.sendStatus(204);
 });
 
-// rename list
+//rename list
 app.put('/api/lists/:listId', async (req, res) => {
   const auth = getAuth(req);
-  const clerkId = auth.userId!;
+  if (!auth.userId) return res.sendStatus(401);
+  const clerkId = auth.userId;
   const { listId } = req.params;
   const { title } = req.body;
 
@@ -101,9 +94,7 @@ app.put('/api/lists/:listId', async (req, res) => {
     where: { id: listId },
     include: { user: true },
   });
-  if (list.user.clerkId !== clerkId) {
-    return res.sendStatus(403);
-  }
+  if (list.user.clerkId !== clerkId) return res.sendStatus(403);
 
   const updated = await prisma.todoList.update({
     where: { id: listId },
@@ -114,19 +105,20 @@ app.put('/api/lists/:listId', async (req, res) => {
   res.json(updated);
 });
 
-// create list
+
+// create task
 app.post('/api/lists/:listId/tasks', async (req, res) => {
   const auth = getAuth(req);
-  const clerkId = auth.userId!;
+  if (!auth.userId) return res.sendStatus(401);
+  const clerkId = auth.userId;
   const { listId } = req.params;
   const { content } = req.body;
 
   // list auth
   const user = await prisma.user.findUniqueOrThrow({ where: { clerkId } });
-  await prisma.todoList.findFirstOrThrow({
-    where: { id: listId, userId: user.id },
-  });
+  await prisma.todoList.findFirstOrThrow({ where: { id: listId, userId: user.id } });
 
+  // create action
   const task = await prisma.task.create({
     data: { content, listId },
   });
@@ -137,22 +129,22 @@ app.post('/api/lists/:listId/tasks', async (req, res) => {
 // update task
 app.put('/api/tasks/:taskId', async (req, res) => {
   const auth = getAuth(req);
-  const clerkId = auth.userId!;
+  if (!auth.userId) return res.sendStatus(401);
+  const clerkId = auth.userId;
   const { taskId } = req.params;
   const { completed, content } = req.body;
 
-  // trask auth
+  // task auth
   const task = await prisma.task.findUniqueOrThrow({
     where: { id: taskId },
     include: { list: { select: { user: true } } },
   });
-  if (task.list.user.clerkId !== clerkId) {
-    return res.sendStatus(403);
-  }
+  if (task.list.user.clerkId !== clerkId) return res.sendStatus(403);
 
+  // update action
   const updated = await prisma.task.update({
     where: { id: taskId },
-    data: {
+    data: { 
       ...(completed !== undefined && { completed }),
       ...(content !== undefined && { content }),
     },
@@ -164,7 +156,8 @@ app.put('/api/tasks/:taskId', async (req, res) => {
 // delete task
 app.delete('/api/tasks/:taskId', async (req, res) => {
   const auth = getAuth(req);
-  const clerkId = auth.userId!;
+  if (!auth.userId) return res.sendStatus(401);
+  const clerkId = auth.userId;
   const { taskId } = req.params;
 
   // task auth
@@ -172,9 +165,7 @@ app.delete('/api/tasks/:taskId', async (req, res) => {
     where: { id: taskId },
     include: { list: { select: { user: true } } },
   });
-  if (task.list.user.clerkId !== clerkId) {
-    return res.sendStatus(403);
-  }
+  if (task.list.user.clerkId !== clerkId) return res.sendStatus(403);
 
   await prisma.task.delete({ where: { id: taskId } });
   res.sendStatus(204);
